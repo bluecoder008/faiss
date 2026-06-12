@@ -39,8 +39,13 @@ CMAKE_ARGS = -B $(BUILD_DIR) . \
 # --- macOS: Apple Clang has no built-in OpenMP; use Homebrew libomp --------
 ifeq ($(shell uname -s),Darwin)
   LIBOMP_PREFIX ?= /opt/homebrew/opt/libomp
+  # Provide both CXX and C OpenMP settings: the main faiss project enables only
+  # CXX, but TESTING=ON pulls in perf_tests/, whose project() re-enables C, so
+  # find_package(OpenMP) there also probes the C component.
   CMAKE_ARGS += -DOpenMP_CXX_FLAGS="-Xclang -fopenmp -I$(LIBOMP_PREFIX)/include" \
                 -DOpenMP_CXX_LIB_NAMES=omp \
+                -DOpenMP_C_FLAGS="-Xclang -fopenmp -I$(LIBOMP_PREFIX)/include" \
+                -DOpenMP_C_LIB_NAMES=omp \
                 -DOpenMP_omp_LIBRARY="$(LIBOMP_PREFIX)/lib/libomp.dylib"
 endif
 
